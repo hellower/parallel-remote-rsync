@@ -47,8 +47,8 @@ function adjust_format () {
         echo $arg
     fi
 }
-remote_dir=$(adjust_format $remote_dir)
-local_dir=$(adjust_format $local_dir)
+remote_dir=$(adjust_format "$remote_dir")
+local_dir=$(adjust_format "$local_dir")
 
 # Ignore all restart files for now and add only the desired ones later
 ignore_files+=(rstfile.*)
