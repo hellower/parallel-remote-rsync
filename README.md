@@ -1,4 +1,4 @@
-# remote_op
+# parallel-remote-rsync
 Script to handle parallel data transfer from a remote server to a local host.
 
 I have created this sript to easely download the results of my simulations from a remote cluster to my local machine.
