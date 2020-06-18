@@ -33,6 +33,8 @@ nrstfiles=3 # number of last rstfiles to be transfered
 
 nthreads=4 # Number of parallel process
 
+deleteFromRemote=false
+
 compress=false # set as true only if your bandwidth is really bad. Compression takes time.
 oldest_1st=false # set as true to transfer data ranked by the oldest to the newest (use `false` otherwise)
 
@@ -81,10 +83,13 @@ rel_selected_files+=(${rel_rstfiles[@]})
 # Prepare "transfer.log" temporary file that specifies the commands to be used
 # in the GNU parallel.
 printf '%s\n' "${rel_selected_files[@]}" > transfer.log
+deleteFlag=''
+if [ $deleteFromRemote = true ]; then
+   deleteFlag='--remove-source-files'
+fi
+flags='-am -vv '$deleteFlag
 if [ $compress = true ]; then
-    flags='-azm -vv'
-else
-    flags='-am -vv'
+    flags='-azm -vv '$deleteFlag
 fi
 prefix='rsync '"$flags"' --stats --relative --safe-links --human-readable -e "ssh -q" '"$remote_serv"':'"$remote_dir./"
 suffix=" $local_dir"
