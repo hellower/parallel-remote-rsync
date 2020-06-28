@@ -34,6 +34,7 @@ nrstfiles=3 # number of last rstfiles to be transfered
 nthreads=4 # Number of parallel process
 
 deleteFromRemote=false
+simulationIsRunning=true # If true, ignore the last modified file
 
 compress=false # set as true only if your bandwidth is really bad. Compression takes time.
 oldest_1st=false # set as true to transfer data ranked by the oldest to the newest (use `false` otherwise)
@@ -58,6 +59,13 @@ ignore_files+=(rstfile.*)
 rstfiles=($(ssh -q $remote_serv find $remote_dir -type f -name "rstfile.*" -exec ls -t {} + | head -$nrstfiles))
 rel_rstfiles=(${rstfiles[@]##$remote_dir}) # relative path
 
+# If the simulation is running, we don't want to transfer a file that is being written.
+if [ simulationIsRunning = true ]; then
+    lastModified=($(ssh -q $remote_serv find $remote_dir -type f -name *.cgns -printf '"%T@ %p\n"' | sort -n | tail -1 | cut -f2- -d" "))
+    lastModified=$(echo ${lastModified##*/}) # get only the filename
+    ignore_files+=($lastModified)
+fi
+
 # Create an array to be expanded in the bash find command. This array specifies
 # that the formats passed in the input section of this script should be ignored
 # by the find command.
@@ -79,6 +87,10 @@ rel_selected_files=(${selected_files[@]##$remote_dir}) # relative path
 # Add the restart files to the selected files (relative path)
 rel_selected_files+=(${rel_rstfiles[@]})
 
+if [ -z $rel_selected_files ]; then
+    # No files to be transferred
+    exit 1
+fi
 
 # Prepare "transfer.log" temporary file that specifies the commands to be used
 # in the GNU parallel.
